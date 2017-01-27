@@ -7,7 +7,7 @@
             [ring.util.response :refer [response]]
             [ring.middleware.logger :as logger]
             [clojure.tools.logging :as log]
-            [rydz.core refer :all]))
+            [rydz.core :refer :all]))
 
 (defroutes app-routes
   (route/not-found (response {:message "Page not found"})))
