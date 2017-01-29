@@ -66,3 +66,8 @@
         "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=###from###&destinations=###to###&key=###key###"
         (distance-url "###key###" "###from###" "###to###")))))
 
+(deftest test-distance-from-json
+  (testing "valid, sucessful response from google Distance API"
+    (is (=
+      {:distance {:metres 90163} :time {:seconds 4534}}
+      (distance-from-json "{\n   \"destination_addresses\" : [ \"Forth Rd, Upminster RM14 1PX, UK\" ],\n   \"origin_addresses\" : [ \"Atbara Rd, Teddington TW11 9PA, UK\" ],\n   \"rows\" : [\n      {\n         \"elements\" : [\n            {\n               \"distance\" : {\n                  \"text\" : \"56.0 mi\",\n                  \"value\" : 90163\n               },\n               \"duration\" : {\n                  \"text\" : \"1 hour 16 mins\",\n                  \"value\" : 4534\n               },\n               \"status\" : \"OK\"\n            }\n         ]\n      }\n   ],\n   \"status\" : \"OK\"\n}\n")))))

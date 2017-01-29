@@ -35,6 +35,16 @@
     "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=%s&destinations=%s&key=%s"
     from to key))
 
+(defn distance-from-json
+  [json]
+  (let
+    [rows ((parse-string json) "rows")
+     elements ((first rows) "elements")
+     distance (get-in (first elements) ["distance" "value"])
+     duration (get-in (first elements) ["duration" "value"])]
+    {:distance {:metres distance}
+     :time {:seconds duration}}))
+
 (comment 
 The rate-book should be a function that takes 2 addresses and returns a price.
 
