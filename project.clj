@@ -4,6 +4,8 @@
   :license {:name "GPLv3"
             :url "http://www.gnu.org/licenses/gpl-3.0.en.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
+                 [cheshire "5.7.0"]
+                 [clj-http "3.4.1"]
                  [ring/ring-core "1.5.1"]
                  [ring/ring-jetty-adapter "1.5.1"]
                  [ring/ring-json "0.4.0"]

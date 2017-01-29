@@ -47,3 +47,22 @@
         (=
           22.50
           (job-quote rate-book from to))))))
+
+(deftest test-load-config
+  (testing "check config file is there"
+    (is (not
+      (nil? (load-config)))))
+  (testing "config file contains :keys"
+    (is (not
+      (nil? (get (load-config) :keys)))))
+  (testing "config contains :keys,:google-distance"
+    (is (not
+      (nil? (get-in (load-config) [:keys :google-distance]))))))
+
+(deftest test-distance-url
+  (testing "valid from, to and key"
+    (is
+      (=
+        "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=###from###&destinations=###to###&key=###key###"
+        (distance-url "###key###" "###from###" "###to###")))))
+

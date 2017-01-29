@@ -1,6 +1,11 @@
 (ns rydz.core
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [cheshire.core :refer :all])
   (:gen-class))
+
+(defn load-config
+  []
+  (read-string (slurp "config.clj")))
 
 (defn rate-book-add
   [book from to price]
@@ -23,6 +28,12 @@
     [from' (postcode-area (from :postcode))
      to' (postcode-area (to :postcode))]
     (get-in rate-book [from' to'])))
+
+(defn distance-url
+  [key from to]
+  (format
+    "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=%s&destinations=%s&key=%s"
+    from to key))
 
 (comment 
 The rate-book should be a function that takes 2 addresses and returns a price.
