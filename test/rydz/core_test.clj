@@ -59,15 +59,39 @@
     (is (not
       (nil? (get-in (load-config) [:keys :google-distance]))))))
 
+(deftest test-swap-keys
+  (testing "flat map, multiple keys"
+    (is (=
+      {:one 1, :two 2, "three" 3}
+      (swap-keys {"one" 1 "two" 2 "three" 3} {"one" :one, "two" :two, "four" :four}))))
+  (testing "nestsed maps"
+    (is (=
+      {:one 1, :four {:two 2}, "three" 3}
+      (swap-keys {"one" 1 "four" {"two" 2} "three" 3} {"one" :one, "two" :two, "four" :four}))))
+  (testing "nested sequence of maps"
+    (is (=
+      {:one 1, :four [{:two 2}, {"three" 3}]}
+      (swap-keys
+        {"one" 1 "four" [{"two" 2}, {"three" 3}]}
+        {"one" :one, "two" :two, "four" :four})))))
+
 (deftest test-distance-url
   (testing "valid from, to and key"
-    (is
-      (=
-        "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=###from###&destinations=###to###&key=###key###"
-        (distance-url "###key###" "###from###" "###to###")))))
+    (is (=
+      "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=###from###&destinations=###to###&key=###key###"
+      (distance-url "###key###" "###from###" "###to###")))))
 
 (deftest test-distance-from-json
   (testing "valid, sucessful response from google Distance API"
     (is (=
       {:distance {:metres 90163} :time {:seconds 4534}}
       (distance-from-json "{\n   \"destination_addresses\" : [ \"Forth Rd, Upminster RM14 1PX, UK\" ],\n   \"origin_addresses\" : [ \"Atbara Rd, Teddington TW11 9PA, UK\" ],\n   \"rows\" : [\n      {\n         \"elements\" : [\n            {\n               \"distance\" : {\n                  \"text\" : \"56.0 mi\",\n                  \"value\" : 90163\n               },\n               \"duration\" : {\n                  \"text\" : \"1 hour 16 mins\",\n                  \"value\" : 4534\n               },\n               \"status\" : \"OK\"\n            }\n         ]\n      }\n   ],\n   \"status\" : \"OK\"\n}\n")))))
+
+(deftest test-handle-google-distance
+  (testing "valid, successful single from/to response"
+    (is (=
+      {:destination-addresses ["Edinburgh, UK"]
+       :origin_addresses ["London, UK"]
+       :rows [{:elements [{:distance {:text "414 mi" :value 666433} :duration {:text "7 hours 11 mins" :value 25874} :status "OK"}]}]
+       :status "OK"}
+      (handle-google-distance {:request-time 786, :repeatable? false, :protocol-version {:name "HTTP", :major 1, :minor 1}, :streaming? true, :chunked? false, :reason-phrase "OK", :headers {"Server" "mafe", "Content-Type" "application/json; charset=UTF-8", "Alt-Svc" "quic=\":443\"; ma=2592000; v=\"35,34\"", "X-Frame-Options" "SAMEORIGIN", "Connection" "close", "Expires" "Mon, 30 Jan 2017 18:02:39 GMT", "Date" "Sun, 29 Jan 2017 18:02:39 GMT", "Vary" "Accept-Language", "X-XSS-Protection" "1; mode=block", "Cache-Control" "public, max-age=86400"}, :orig-content-encoding nil, :status 200, :length -1, :body "{\n   \"destination_addresses\" : [ \"Edinburgh, UK\" ],\n   \"origin_addresses\" : [ \"London, UK\" ],\n   \"rows\" : [\n      {\n         \"elements\" : [\n            {\n               \"distance\" : {\n                  \"text\" : \"414 mi\",\n                  \"value\" : 666433\n               },\n               \"duration\" : {\n                  \"text\" : \"7 hours 11 mins\",\n                  \"value\" : 25874\n               },\n               \"status\" : \"OK\"\n            }\n         ]\n      }\n   ],\n   \"status\" : \"OK\"\n}\n", :trace-redirects ["https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=London&destinations=Edinburgh&key=AIzaSyAC95_dw0iNYFCQRwlE1ZmfVf1qQO6FOJg"]})))))
