@@ -58,7 +58,6 @@
    (let [v (m k1)]
      (assoc (dissoc m k1) k2 v)))
   ([m ks]
-   (println m)
    (reduce
     (fn [a [k1 k2]] 
       (if (and (map? a) (contains? a k1))
