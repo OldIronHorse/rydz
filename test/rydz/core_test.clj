@@ -37,13 +37,21 @@
           "TW11" "NW1" 23.5)))))
 
 (deftest test-postcode-price
-  (testing "ratebook as partially applied pricing function"
+  (testing "postcode ratebook as partially applied pricing function"
     (let
       [ratebook (partial postcode-price {"NW1" {"TW11" 22.5} "TW11" {"NW1" 23.5}})]
       (is (= 23.50 (ratebook {:postcode "TW11 9PA"} {:postcode "NW1 1AB"})))
       (is (= 22.50 (ratebook {:postcode "NW1 1AB"} {:postcode "TW11 9PA"})))
       (is (nil? (ratebook {:postcode "TW11 9PA"} {:postcode "SE1 1AB"}))
       (is (nil? (ratebook {:postcode "SE1 1AB"} {:postcode "EC4 1AB"})))))))
+
+(deftest test-mileage-price
+  (testing "mileage ratebook as partially applied pricing function with distance source"
+    (let
+      [distance-source (fn [from to] 123456)
+       banded-rate (fn [distance] (if (< distance 5000) 0.50 (if (< distance 20000) 0.25 0.10)))
+       ratebook (partial (partial mileage-price banded-rate) distance-source)]
+      (is (= (/ (* 123456 0.1) 1000) (ratebook {:postcode "TW11 9PA"} {:postcode "NW1 1AB"}))))))
 
 (deftest test-load-config
   (testing "check config file is there"
@@ -71,6 +79,23 @@
       (swap-keys
         {"one" 1 "four" [{"two" 2}, {"three" 3}]}
         {"one" :one, "two" :two, "four" :four})))))
+
+(deftest test-address-to-string
+  (testing "Fully populated address"
+    (is (=
+      "53, Nile Street, Twickenham, TW31 7YE, UK"
+      (address-to-string {:country "UK"
+                          :postcode "TW31 7YE"
+                          :city "Twickenham"
+                          :street "Nile Street"
+                          :house "53"}))))
+  (testing "No house number"
+    (is (=
+      "Nile Street, Twickenham, TW31 7YE, UK"
+      (address-to-string {:country "UK"
+                          :postcode "TW31 7YE"
+                          :city "Twickenham"
+                          :street "Nile Street"})))))
 
 (deftest test-distance-url
   (testing "valid from, to and key"

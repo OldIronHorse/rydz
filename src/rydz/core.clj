@@ -27,6 +27,17 @@
   [ratebook from to]
   (get-in ratebook [(postcode-area (from :postcode)) (postcode-area (to :postcode))]))
 
+(defn mileage-price
+  "Return a mileage based price using the supplied rate and distance source funtions"
+  [rate-source distance-source from to]
+  (let
+    [distance (distance-source from to)
+     rate (rate-source distance)]
+    (/ (* distance rate) 1000.0)))
+
+(defn address-to-string
+  [address]
+  (str/join ", " (filter #(not (nil? %1)) (map #(address %1) [:house :street :city :postcode :country]))))
 
 (defn distance-url
   [key from to]
