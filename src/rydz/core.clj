@@ -30,6 +30,12 @@
      to' (postcode-area (to :postcode))]
     (get-in rate-book [from' to'])))
 
+(defn postcode-price
+  "Return a postcode to postcode price based on the supplied rate book"
+  [ratebook from to]
+  (get-in ratebook [(postcode-area (from :postcode)) (postcode-area (to :postcode))]))
+
+
 (defn distance-url
   [key from to]
   (format

@@ -36,6 +36,16 @@
           {"NW1" {"TW11" 22.5}}
           "TW11" "NW1" 23.5)))))
 
+(deftest test-postcode-price
+  (testing "ratebook as partially applied pricing function"
+    (let
+      [ratebook (partial postcode-price {"NW1" {"TW11" 22.5} "TW11" {"NW1" 23.5}})]
+      (is (= 23.50 (ratebook {:postcode "TW11 9PA"} {:postcode "NW1 1AB"})))
+      (is (= 22.50 (ratebook {:postcode "NW1 1AB"} {:postcode "TW11 9PA"})))
+      (is (nil? (ratebook {:postcode "TW11 9PA"} {:postcode "SE1 1AB"}))
+      (is (nil? (ratebook {:postcode "SE1 1AB"} {:postcode "EC4 1AB"})))))))
+
+
 (deftest test-job-quote
   (testing "quote, valid"
     (let
