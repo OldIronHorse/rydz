@@ -37,7 +37,11 @@
 
 (defn address-to-string
   [address]
-  (str/join ", " (filter #(not (nil? %1)) (map #(address %1) [:house :street :city :postcode :country]))))
+  (str/join
+    ", "
+    (filter
+      #(not (nil? %1))
+      (map #(address %1) [:house :street :city :postcode :country]))))
 
 (defn distance-url
   [key from to]
@@ -96,6 +100,8 @@
 
 (comment 
 The rate-book should be a function that takes 2 addresses and returns a price.
+
+A ratebook is just a function that takes 2 addesses and returns a price
 
 1. create/find rate book in stages
   a. user
