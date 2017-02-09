@@ -45,19 +45,6 @@
       (is (nil? (ratebook {:postcode "TW11 9PA"} {:postcode "SE1 1AB"}))
       (is (nil? (ratebook {:postcode "SE1 1AB"} {:postcode "EC4 1AB"})))))))
 
-
-(deftest test-job-quote
-  (testing "quote, valid"
-    (let
-      [rate-book {"NW1" {"TW11" 23.5}
-                  "TW11" {"NW1" 22.5}}
-       from {:postcode "TW11 9PA"}
-       to {:postcode "NW1 3ER"}]
-      (is
-        (=
-          22.50
-          (job-quote rate-book from to))))))
-
 (deftest test-load-config
   (testing "check config file is there"
     (is (not

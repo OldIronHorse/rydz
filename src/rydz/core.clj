@@ -22,14 +22,6 @@
   [postcode]
   (first (str/split postcode #" ")))
 
-(defn job-quote
-  "Return a point to point price based on the supplied rate book"
-  [rate-book from to]
-  (let
-    [from' (postcode-area (from :postcode))
-     to' (postcode-area (to :postcode))]
-    (get-in rate-book [from' to'])))
-
 (defn postcode-price
   "Return a postcode to postcode price based on the supplied rate book"
   [ratebook from to]
