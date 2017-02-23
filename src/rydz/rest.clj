@@ -9,5 +9,28 @@
             [clojure.tools.logging :as log]
             [rydz.core :refer :all]))
 
+(def ratebook (partial postcode-price {"NW1" {"TW11" 22.5} "TW11" {"NW1" 23.5}}))
+
 (defroutes app-routes
+  (POST "/quote" request
+    (let
+      [from (-> request :body :from)
+       to (-> request :body :to)]
+      (response {:journey (request :body) :price (ratebook from to)})))
   (route/not-found (response {:message "Page not found"})))
+
+(defn wrap-exception-handling [handler]
+  (fn [request]
+    (try
+      (handler request)
+      (catch Exception e
+        (log/info "wrap-exception-handling" (str e))
+        {:status 404, :body "Item not found"}))))
+
+(def app
+  (-> app-routes
+    logger/wrap-with-logger
+    (wrap-json-body {:keywords? true})
+    wrap-json-response
+    wrap-exception-handling
+    (wrap-defaults api-defaults)))

@@ -21,20 +21,13 @@
     (is
       (= "TW11" (postcode-area "TW11 9PA")))))
 
-(deftest test-build-rate-book
-  (testing "add a point to point price to an empty rate book"
-    (is
-      (=
-        {"NW1" {"TW11" 22.5}}
-        (rate-book-add {} "NW1" "TW11" 22.5))))
-  (testing "add a new route to a book"
+(deftest test-load-rate-book
+  (testing "Load a rate book from a file"
     (is
       (=
         {"NW1" {"TW11" 22.5}
          "TW11" {"NW1" 23.5}}
-        (rate-book-add
-          {"NW1" {"TW11" 22.5}}
-          "TW11" "NW1" 23.5)))))
+        (rate-book-load "test/test_postcode.ratebook")))))
 
 (deftest test-postcode-price
   (testing "postcode ratebook as partially applied pricing function"

@@ -8,9 +8,9 @@
   []
   (read-string (slurp "config.clj")))
 
-(defn rate-book-add
-  [book from to price]
-  (assoc-in book [from to] price))
+(defn rate-book-load
+  [filename]
+  (read-string (slurp filename)))
 
 (defn address
   "Create an address map from a multiline address [country postcode city street house]"
