@@ -67,18 +67,18 @@
     (distance-from-json json)))
 
 (defn swap-keys
-  ([m k1 k2]
+  ([k1 k2 m]
    (let [v (m k1)]
      (assoc (dissoc m k1) k2 v)))
-  ([m ks]
+  ([ks m]
    (reduce
     (fn [a [k1 k2]] 
       (if (and (map? a) (contains? a k1))
         (if (map? (a k1))
-          (assoc (dissoc a k1) k2 (swap-keys (a k1) ks))
+          (assoc (dissoc a k1) k2 (swap-keys ks (a k1)))
           (if (sequential? (a k1))
-            (assoc (dissoc a k1) k2 (map (fn [m] (swap-keys m ks)) (a k1)))
-            (swap-keys a k1 k2)))
+            (assoc (dissoc a k1) k2 (map (fn [m] (swap-keys ks m)) (a k1)))
+            (swap-keys k1 k2 a)))
         a))
     m ks)))
 
@@ -86,17 +86,19 @@
   [response]
   (let
     [body (parse-string (response :body))
-     key-map {"destination_addresses" :destination-addresses
-           "origin_addresses" :origin-addresses
-           "elements" :elements
-           "distance" :distance
-           "text" :text
-           "value" :value
-           "duration" :duration
-           "rows" :rows
-           "status" :status}
-     body' (swap-keys body key-map)]
-    (assoc body' :rows (map (fn [m] (swap-keys m key-map)) (get body' :rows)))))
+     key-swapper (partial
+                  swap-keys 
+                  {"destination_addresses" :destination-addresses
+                   "origin_addresses" :origin-addresses
+                   "elements" :elements
+                   "distance" :distance
+                   "text" :text
+                   "value" :value
+                   "duration" :duration
+                   "rows" :rows
+                   "status" :status})
+     body' (key-swapper body)]
+    (assoc body' :rows (map (fn [m] (key-swapper m)) (get body' :rows)))))
 
 (def google-api-key (get-in (load-config) [:keys :google-distance]))
 
@@ -109,26 +111,26 @@
 
 (defn map-google-address-keys
   [body]
-  (let
-    [key-map {"results" :results
-              "status" :status
-              "address_components" :address-components
-              "long_name" :long-name
-              "short_name" :short-name
-              "formatted_address" :formatted-address
-              "geometry" :bounds
-              "place_id" :place-id
-              "types" :types
-              "lat" :latitude
-              "lng" :longitude
-              "location_type" :location-type
-              "location" :location
-              "viewport" :viewport
-              "northeast" :northeast
-              "southwest" :southwest
-              "bounds" :bounds
-              "partial_match" :partial-match}]
-      (swap-keys body key-map)))
+  (swap-keys
+    {"results" :results
+     "status" :status
+     "address_components" :address-components
+     "long_name" :long-name
+     "short_name" :short-name
+     "formatted_address" :formatted-address
+     "geometry" :bounds
+     "place_id" :place-id
+     "types" :types
+     "lat" :latitude
+     "lng" :longitude
+     "location_type" :location-type
+     "location" :location
+     "viewport" :viewport
+     "northeast" :northeast
+     "southwest" :southwest
+     "bounds" :bounds
+     "partial_match" :partial-match}
+    body))
 
 (defn extract-address-components
   [results]
@@ -143,13 +145,14 @@
   ;;      Add testcases for each nested step
   (let
     [body (map-google-address-keys json)
-     address-key-map {"street_number" :house
-                      "route" :street
-                      "postal_town" :city
-                      "country" :country
-                      "postal_code" :postcode
-                      "geometry" :geometry}
-     address (swap-keys (extract-address-components (body :results)) address-key-map)
+     address (swap-keys
+               {"street_number" :house
+                "route" :street
+                "postal_town" :city
+                "country" :country
+                "postal_code" :postcode
+                "geometry" :geometry}
+              (extract-address-components (body :results)))
      location (get-in (first (body :results)) [:bounds :location])]
     (assoc
       (select-keys address [:house :street :city :postcode :country :geometry])

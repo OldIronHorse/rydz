@@ -61,17 +61,17 @@
   (testing "flat map, multiple keys"
     (is (=
       {:one 1, :two 2, "three" 3}
-      (swap-keys {"one" 1 "two" 2 "three" 3} {"one" :one, "two" :two, "four" :four}))))
+      (swap-keys {"one" :one, "two" :two, "four" :four} {"one" 1 "two" 2 "three" 3}))))
   (testing "nestsed maps"
     (is (=
       {:one 1, :four {:two 2}, "three" 3}
-      (swap-keys {"one" 1 "four" {"two" 2} "three" 3} {"one" :one, "two" :two, "four" :four}))))
+      (swap-keys {"one" :one, "two" :two, "four" :four} {"one" 1 "four" {"two" 2} "three" 3}))))
   (testing "nested sequence of maps"
     (is (=
       {:one 1, :four [{:two 2}, {"three" 3}]}
       (swap-keys
-        {"one" 1 "four" [{"two" 2}, {"three" 3}]}
-        {"one" :one, "two" :two, "four" :four})))))
+        {"one" :one, "two" :two, "four" :four}
+        {"one" 1 "four" [{"two" 2}, {"three" 3}]})))))
 
 (deftest test-address-to-string
   (testing "Fully populated address"
