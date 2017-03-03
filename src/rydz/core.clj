@@ -130,25 +130,29 @@
               "partial_match" :partial-match}]
       (swap-keys body key-map)))
 
+(defn extract-address-components
+  [results]
+  (reduce
+    (fn [a x] (assoc a (first (x :types)) (x :long-name)))
+    {}
+    ((first results) :address-components)))
+
 (defn address-from-geolocate-json
   [json]
+  ;; TODO decompose this function
+  ;;      Add testcases for each nested step
   (let
-    [body (map-google-address-keys (parse-string json))
-     results (body :results)
+    [body (map-google-address-keys json)
      address-key-map {"street_number" :house
                       "route" :street
                       "postal_town" :city
                       "country" :country
                       "postal_code" :postcode
                       "geometry" :geometry}
-     address (reduce
-              (fn [a x] (assoc a (first (x :types)) (x :long-name)))
-              {}
-              ((first results) :address-components))
-     address' (swap-keys address address-key-map)
-     location (get-in (first results) [:bounds :location])]
+     address (swap-keys (extract-address-components (body :results)) address-key-map)
+     location (get-in (first (body :results)) [:bounds :location])]
     (assoc
-      (select-keys address' [:house :street :city :postcode :country :geometry])
+      (select-keys address [:house :street :city :postcode :country :geometry])
       :location (assoc location :type :latlong))))
 
 (defn geolocate
@@ -156,7 +160,7 @@
   (let
     [url (geolocate-url address)
      response (client/get url)]
-    (address-from-geolocate-json (response :body))))
+    (address-from-geolocate-json (parse-string (response :body)))))
 
 (comment 
 The rate-book should be a function that takes 2 addresses and returns a price.

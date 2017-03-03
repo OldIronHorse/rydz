@@ -129,3 +129,54 @@
        :house "55"
        :location{:type :latlong :latitude 51.4246551 :longitude -0.3186937}}
       (geolocate {:postcode "TW11 9PA" :house "55" :street "Atbara Road"})))))
+
+(deftest test-address-from-geolocate-json
+  (testing "number, street, town"
+    (is (=
+      {:country "United Kingdom"
+       :postcode "TW11 9PA"
+       :city "Teddington"
+       :street "Atbara Road"
+       :house "55"
+       :location{:type :latlong :latitude 51.4246551 :longitude -0.3186937}}
+      (address-from-geolocate-json
+        {"results"
+          [{"address_components"
+            [{"long_name" "55"
+              "short_name" "55"
+              "types" ["street_number"]}
+             {"long_name" "Atbara Road"
+              "short_name" "Atbara Rd"
+              "types" ["route"]}
+             {"long_name" "Teddington"
+              "short_name" "Teddington"
+              "types" ["postal_town"]}
+             {"long_name" "Greater London"
+              "short_name" "Greater London"
+              "types" ["administrative_area_level_2" "political"]}
+             {"long_name" "England"
+              "short_name" "England"
+              "types" ["administrative_area_level_1" "political"]}
+             {"long_name" "United Kingdom"
+              "short_name" "GB"
+              "types" ["country" "political"]}
+             {"long_name" "TW11 9PA"
+              "short_name" "TW11 9PA"
+              "types" ["postal_code"]}]
+             "formatted_address" "55 Atbara Rd, Teddington TW11 9PA, UK"
+             "geometry"
+              {"location"
+                {"lat" 51.4246551
+                 "lng" -0.3186937}
+               "location_type" "ROOFTOP"
+               "viewport"
+                {"northeast"
+                  {"lat" 51.42600408029149
+                   "lng" -0.3173447197084979}
+                 "southwest"
+                  {"lat" 51.4233061197085
+                   "lng" -0.320042680291502}}}
+             "place_id" "ChIJJWSk2oULdkgR_MkSqEl5CYU"
+             "types" ["street_address"]}]
+         "status" "OK"})))))
+
