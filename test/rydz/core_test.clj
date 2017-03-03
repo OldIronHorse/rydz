@@ -21,13 +21,13 @@
     (is
       (= "TW11" (postcode-area "TW11 9PA")))))
 
-(deftest test-load-rate-book
+(deftest test-load-ratebook
   (testing "Load a rate book from a file"
     (is
       (=
         {"NW1" {"TW11" 22.5}
          "TW11" {"NW1" 23.5}}
-        (rate-book-load "test/test_postcode.ratebook")))))
+        (ratebook-load "test/test_postcode.ratebook")))))
 
 (deftest test-postcode-price
   (testing "postcode ratebook as partially applied pricing function"
@@ -118,3 +118,14 @@
     (is (=
       ["London, UK"]
       (r :origin-addresses))))))
+
+(deftest test-geolocate
+  (testing "incomplete address, house number and postcode"
+    (is (=
+      {:country "United Kingdom"
+       :postcode "TW11 9PA"
+       :city "Teddington"
+       :street "Atbara Road"
+       :house "55"
+       :location{:type :latlong :latitude 51.4246551 :longitude -0.3186937}}
+      (geolocate {:postcode "TW11 9PA" :house "55" :street "Atbara Road"})))))

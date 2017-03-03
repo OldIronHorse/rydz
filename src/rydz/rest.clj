@@ -9,7 +9,7 @@
             [clojure.tools.logging :as log]
             [rydz.core :refer :all]))
 
-(def ratebook (partial postcode-price {"NW1" {"TW11" 22.5} "TW11" {"NW1" 23.5}}))
+(def ratebook (partial postcode-price (ratebook-load "postcode.ratebook")))
 
 (defroutes app-routes
   (POST "/quote" request
