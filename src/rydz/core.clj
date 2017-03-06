@@ -103,11 +103,11 @@
 (def google-api-key (get-in (load-config) [:keys :google-distance]))
 
 (defn geolocate-url
-  [address]
+  [key address]
   (format
     "https://maps.googleapis.com/maps/api/geocode/json?address=%s&key=%s"
     (address-to-string address)
-    google-api-key))
+    key))
 
 (defn map-google-address-keys
   [body]
@@ -141,8 +141,6 @@
 
 (defn address-from-geolocate-json
   [json]
-  ;; TODO decompose this function
-  ;;      Add testcases for each nested step
   (let
     [body (map-google-address-keys json)
      address (swap-keys
@@ -159,20 +157,11 @@
       :location (assoc location :type :latlong))))
 
 (defn geolocate
-  [address]
-  (let
-    [url (geolocate-url address)
-     response (client/get url)]
-    (address-from-geolocate-json (parse-string (response :body)))))
+  [key address]
+  (address-from-geolocate-json
+    (parse-string ((client/get (geolocate-url key address)) :body))))
 
-(comment 
-The rate-book should be a function that takes 2 addresses and returns a price.
+;; TODO Replace geolocate-url with a function of [key address]
+;;      Partially apply this and use a with-redefs-fn to mock reader in tests
 
-A ratebook is just a function that takes 2 addesses and returns a price
 
-1. create/find rate book in stages
-  a. user
-  b. service
-  c. time?
-  c. from/to
-  )

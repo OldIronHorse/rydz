@@ -1,6 +1,7 @@
 (ns rydz.core-test
   (:require [clojure.test :refer :all]
             [clojure.data :refer :all]
+            [clj-http.client :as client]
             [rydz.core :refer :all]))
 
 (deftest test-address
@@ -121,14 +122,20 @@
 
 (deftest test-geolocate
   (testing "incomplete address, house number and postcode"
-    (is (=
-      {:country "United Kingdom"
-       :postcode "TW11 9PA"
-       :city "Teddington"
-       :street "Atbara Road"
-       :house "55"
-       :location{:type :latlong :latitude 51.4246551 :longitude -0.3186937}}
-      (geolocate {:postcode "TW11 9PA" :house "55" :street "Atbara Road"})))))
+    (with-redefs-fn 
+      {#'client/get (fn
+                      [url]
+                      (is 
+                        (= "https://maps.googleapis.com/maps/api/geocode/json?address=55, Atbara Road, TW11 9PA&key=##my_key##" url))
+                      {:body "{\n\"results\" : [\n{\n\"address_components\" : [\n{\n\"long_name\" : \"55\",\n\"short_name\" : \"55\",\n\"types\" : [ \"street_number\" ]\n },\n {\n\"long_name\" : \"Atbara Road\",\n\"short_name\" : \"Atbara Rd\",\n\"types\" : [ \"route\" ]\n },\n {\n\"long_name\" : \"Teddington\",\n\"short_name\" : \"Teddington\",\n\"types\" : [ \"postal_town\" ]\n },\n {\n\"long_name\" : \"Greater London\",\n\"short_name\" : \"Greater London\",\n\"types\" : [ \"administrative_area_level_2\", \"political\" ]\n },\n {\n\"long_name\" : \"England\",\n\"short_name\" : \"England\",\n\"types\" : [ \"administrative_area_level_1\", \"political\" ]\n },\n {\n\"long_name\" : \"United Kingdom\",\n\"short_name\" : \"GB\",\n\"types\" : [ \"country\", \"political\" ]\n },\n {\n\"long_name\" : \"TW11 9PA\",\n\"short_name\" : \"TW11 9PA\",\n\"types\" : [ \"postal_code\" ]\n }\n ],\n\"formatted_address\" : \"55 Atbara Rd, Teddington TW11 9PA, UK\",\n\"geometry\" : {\n\"location\" : {\n\"lat\" : 51.4246551,\n\"lng\" : -0.3186937\n },\n\"location_type\" : \"ROOFTOP\",\n\"viewport\" : {\n\"northeast\" : {\n\"lat\" : 51.42600408029149,\n\"lng\" : -0.3173447197084979\n },\n\"southwest\" : {\n\"lat\" : 51.4233061197085,\n\"lng\" : -0.320042680291502\n }\n }\n },\n\"place_id\" : \"ChIJJWSk2oULdkgR_MkSqEl5CYU\",\n\"types\" : [ \"street_address\" ]\n }\n ],\n\"status\" : \"OK\"\n }"})}
+      #(is (=
+        {:country "United Kingdom"
+         :postcode "TW11 9PA"
+         :city "Teddington"
+         :street "Atbara Road"
+         :house "55"
+         :location{:type :latlong :latitude 51.4246551 :longitude -0.3186937}}
+        (geolocate "##my_key##" {:postcode "TW11 9PA" :house "55" :street "Atbara Road"}))))))
 
 (deftest test-address-from-geolocate-json
   (testing "number, street, town"
