@@ -45,26 +45,26 @@
 
 (defn distance-url
   [key from to]
-  (format
-    "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=%s&destinations=%s&key=%s"
-    from to key))
+  (str/replace
+    (format
+      "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=%s&destinations=%s&key=%s"
+      from to key)
+    " " "+"))
 
 (defn distance-from-json
   [json]
   (let
     [rows ((parse-string json) "rows")
-     elements ((first rows) "elements")
-     distance (get-in (first elements) ["distance" "value"])
-     duration (get-in (first elements) ["duration" "value"])]
-    {:distance {:metres distance}
-     :time {:seconds duration}}))
+     elements ((first rows) "elements")]
+    {:from (first ((parse-string json) "origin_addresses"))
+     :to (first ((parse-string json) "destination_addresses"))
+     :distance {:metres (get-in (first elements) ["distance" "value"])}
+     :time {:seconds (get-in (first elements) ["duration" "value"])}}))
 
 (defn distance
-  [from to]
-  (let
-    [url (distance-url (get-in (load-config) [:keys :google-distance]) from to)
-     json ((client/get url) :body)]
-    (distance-from-json json)))
+  [key from to]
+  (distance-from-json
+    ((client/get (distance-url key (address-to-string from) (address-to-string to))) :body)))
 
 (defn swap-keys
   ([k1 k2 m]
@@ -161,7 +161,7 @@
   (address-from-geolocate-json
     (parse-string ((client/get (geolocate-url key address)) :body))))
 
-;; TODO Replace geolocate-url with a function of [key address]
+;; TODO Replace distance-url with a function of [key address]
 ;;      Partially apply this and use a with-redefs-fn to mock reader in tests
 
 

@@ -12,7 +12,7 @@
 (def ratebook (partial postcode-price (ratebook-load "postcode.ratebook")))
 
 (defroutes app-routes
-  (POST "/quote" request
+  (GET "/quote" request
     (let
       [from (-> request :body :from)
        to (-> request :body :to)]
